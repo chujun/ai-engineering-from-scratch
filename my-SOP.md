@@ -108,3 +108,45 @@ if torch.cuda.is_available():
     print(f"GPU: {torch.cuda.get_device_name(0)}")
     print(f"VRAM: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f} GB")
 ```
+
+---
+
+## Jupyter Lab 服务启动
+
+Jupyter Lab 是进行 AI 实验的交互式开发环境。
+
+### 启动 Jupyter Lab 服务
+
+```bash
+# 使用服务脚本管理
+./my-shells/start-jupyter-lab-service.sh start
+
+# 或直接启动（适用于临时使用）
+jupyter lab --no-browser --port=8888 --ip=0.0.0.0 --allow-root
+```
+
+### 服务管理命令
+
+```bash
+./my-shells/start-jupyter-lab-service.sh start    # 启动服务
+./my-shells/start-jupyter-lab-service.sh stop     # 停止服务
+./my-shells/start-jupyter-lab-service.sh restart  # 重启服务
+./my-shells/start-jupyter-lab-service.sh status  # 查看状态
+```
+
+### 访问方式
+
+- **本地访问**: http://localhost:8888
+- **远程访问**: http://<服务器IP>:8888
+- 首次登录需要输入终端输出的 token
+
+### 获取 Token（如果需要重新获取）
+
+```bash
+jupyter server list
+```
+
+### 日志位置
+
+- 服务日志: `/tmp/jupyter-logs/jupyter-lab.log`
+- PID 文件: `/tmp/jupyter-lab.pid`
