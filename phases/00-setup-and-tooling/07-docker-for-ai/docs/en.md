@@ -16,7 +16,7 @@
 
 ## The Problem
 
-You trained a model on your laptop with PyTorch 2.3, CUDA 12.4, and Python 3.12. Your colleague has PyTorch 2.1, CUDA 11.8, and Python 3.10. Your model crashes on their machine. Your Dockerfile works on both.
+You trained a model on your laptop with PyTorch 2.6, CUDA 12.4, and Python 3.12. Your colleague has PyTorch 2.1, CUDA 11.8, and Python 3.10. Your model crashes on their machine. Your Dockerfile works on both.
 
 AI projects are dependency nightmares. A typical stack includes Python, PyTorch, CUDA drivers, cuDNN, system-level C libraries, and specialized packages like flash-attn that need exact compiler versions. Docker packages all of this into a single image that runs identically everywhere.
 
@@ -27,15 +27,15 @@ Docker wraps your code, runtime, libraries, and system tools into an isolated un
 ```mermaid
 graph TD
     subgraph without["Without Docker"]
-        A1["Your machine<br/>Python 3.12<br/>CUDA 12.4<br/>PyTorch 2.3"] -->|crashes| X1["???"]
+        A1["Your machine<br/>Python 3.12<br/>CUDA 12.4<br/>PyTorch 2.6"] -->|crashes| X1["???"]
         A2["Their machine<br/>Python 3.10<br/>CUDA 11.8<br/>PyTorch 2.1"] -->|crashes| X2["???"]
         A3["Server<br/>Python 3.11<br/>CUDA 12.1<br/>PyTorch 2.2"] -->|crashes| X3["???"]
     end
 
     subgraph with_docker["With Docker — Same image everywhere"]
-        B1["Your machine<br/>Python 3.12 | CUDA 12.4<br/>PyTorch 2.3 | Your code"]
-        B2["Their machine<br/>Python 3.12 | CUDA 12.4<br/>PyTorch 2.3 | Your code"]
-        B3["Server<br/>Python 3.12 | CUDA 12.4<br/>PyTorch 2.3 | Your code"]
+        B1["Your machine<br/>Python 3.12 | CUDA 12.4<br/>PyTorch 2.6 | Your code"]
+        B2["Their machine<br/>Python 3.12 | CUDA 12.4<br/>PyTorch 2.6 | Your code"]
+        B3["Server<br/>Python 3.12 | CUDA 12.4<br/>PyTorch 2.6 | Your code"]
     end
 ```
 
@@ -135,7 +135,7 @@ nvidia/cuda:12.4.1-runtime-ubuntu22.04
   Use for: running pre-built code
   Size: ~1.5 GB
 
-pytorch/pytorch:2.3.1-cuda12.4-cudnn9-runtime
+pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
   PyTorch pre-installed on top of CUDA.
   Use for: skipping the PyTorch install step
   Size: ~6 GB
@@ -157,10 +157,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
     python3.12 \
     python3.12-venv \
     python3.12-dev \
-    python3-pip \
     git \
     curl \
     build-essential \
@@ -168,12 +171,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
 
+RUN python -m venv /opt/venv
+
+ENV PATH="/opt/venv/bin:$PATH"
+
 RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
 
 RUN python -m pip install --no-cache-dir \
-    torch==2.3.1 \
-    torchvision==0.18.1 \
-    torchaudio==2.3.1 \
+    torch==2.6.0 \
+    torchvision==0.21.0 \
+    torchaudio==2.6.0 \
     --index-url https://download.pytorch.org/whl/cu124
 
 RUN python -m pip install --no-cache-dir \
